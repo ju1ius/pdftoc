@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkPopoverMenu" id="main_menu_popover">
+    <property name="can_focus">False</property>
+    <child>
+      <placeholder/>
+    </child>
+  </object>
+  <object class="GtkApplicationWindow" id="app_window">
+    <property name="can_focus">False</property>
+    <property name="icon_name">gnome-mime-application-pdf</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">6</property>
+        <child>
+          <object class="GtkStack" id="main_stack">
+            <property name="can_focus">False</property>
+            <property name="transition_type">slide-left</property>
+            <property name="interpolate_size">True</property>
+            <child>
+              <object class="GtkGrid" id="about_container">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">6</property>
+                <property name="margin_right">6</property>
+                <property name="margin_top">6</property>
+                <property name="margin_bottom">6</property>
+                <property name="row_spacing">6</property>
+                <property name="column_spacing">6</property>
+                <child>
+                  <object class="GtkLabel" id="meta_title_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="label" translatable="yes">Title</property>
+                    <property name="justify">right</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="meta_subject_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="label" translatable="yes">Subject</property>
+                    <property name="justify">right</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="meta_author_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="label" translatable="yes">Author</property>
+                    <property name="justify">right</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="meta_creator_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="label" translatable="yes">Creator</property>
+                    <property name="justify">right</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="meta_creation_date_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
+                    <property name="label" translatable="yes">Creation Date</property>
+                    <property name="justify">right</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="meta_title_entry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="input_hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_UPPERCASE_SENTENCES | GTK_INPUT_HINT_NONE</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="meta_subject_entry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="input_hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_UPPERCASE_SENTENCES | GTK_INPUT_HINT_NONE</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="meta_author_entry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="input_hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_UPPERCASE_SENTENCES | GTK_INPUT_HINT_NONE</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="meta_creator_entry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="input_hints">GTK_INPUT_HINT_SPELLCHECK | GTK_INPUT_HINT_UPPERCASE_SENTENCES | GTK_INPUT_HINT_NONE</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCalendar" id="meta_creation_date_entry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="year">2016</property>
+                    <property name="month">8</property>
+                    <property name="day">19</property>
+                    <property name="show_details">False</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">about</property>
+                <property name="title" translatable="yes">About</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="toc_container">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkScrolledWindow" id="toc_scrolledwindow">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="toc_treeview">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="headers_clickable">False</property>
+                        <property name="reorderable">True</property>
+                        <property name="search_column">0</property>
+                        <property name="enable_tree_lines">True</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection">
+                            <property name="mode">multiple</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkActionBar" id="toc_actionbar">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">toc</property>
+                <property name="title" translatable="yes">TOC</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStatusbar" id="main_statusbar">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="margin_start">10</property>
+            <property name="margin_end">10</property>
+            <property name="margin_top">6</property>
+            <property name="margin_bottom">6</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">2</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="main_header">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="title">Untitled document</property>
+        <property name="subtitle">Unkown author</property>
+        <property name="has_subtitle">False</property>
+        <property name="show_close_button">True</property>
+        <property name="decoration_layout">icon:menu,close</property>
+        <child>
+          <object class="GtkMenuButton" id="main_menu_btn">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="popover">main_menu_popover</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">open-menu-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackSwitcher" id="main_stack_switcher">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="stack">main_stack</property>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

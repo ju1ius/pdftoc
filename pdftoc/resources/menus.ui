@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk+" version="3.20"/>
+    <menu id="app-menu">
+        <section>
+            <!--<attribute name="display-hint">horizontal-buttons</attribute>-->
+            <item>
+                <attribute name="label">_Open</attribute>
+                <attribute name="action">app.open</attribute>
+                <attribute name="verb-icon">document-open-symbolic</attribute>
+            </item>
+        </section>
+        <section>
+            <item>
+                <attribute name="label">_Quit</attribute>
+                <attribute name="action">app.quit</attribute>
+                <attribute name="verb-icon">application-exit-symbolic</attribute>
+            </item>
+        </section>
+    </menu>
+    <menu id="win-menu">
+        <section>
+            <item>
+                <attribute name="label">_Open</attribute>
+                <attribute name="action">win.open</attribute>
+                <attribute name="verb-icon">document-open-symbolic</attribute>
+            </item>
+            <item>
+                <attribute name="label">_Save</attribute>
+                <attribute name="action">win.save</attribute>
+                <attribute name="verb-icon">document-save-symbolic</attribute>
+            </item>
+            <item>
+                <attribute name="label">Save _As</attribute>
+                <attribute name="action">win.save-as</attribute>
+                <attribute name="verb-icon">document-save-as-symbolic</attribute>
+            </item>
+        </section>
+    </menu>
+</interface>
