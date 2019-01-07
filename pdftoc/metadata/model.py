@@ -1,5 +1,4 @@
-import sys
-from collections import deque
+from typing import Optional, List
 
 from gi.repository import GObject, Gtk
 
@@ -13,10 +12,10 @@ class Document(GObject.GObject):
     creator = GObject.property(type=str, default='')
     creation_date = GObject.property(type=object, default=None)
 
-    def __init__(self, path=None):
+    def __init__(self, path: Optional[str] = None):
         super().__init__()
         self.path = path
-        self.bookmarks = BookmarkStore()
+        self.bookmarks: BookmarkStore = BookmarkStore()
         self.page_medias = []
         # Read-only values
         self.modification_date = None
@@ -24,7 +23,7 @@ class Document(GObject.GObject):
         # Unknown key-value pairs
         self.infos = {}
         # Unknown lines
-        self.unknown = []
+        self.unknown: List[str] = []
 
 
 class BookmarkStore(Gtk.TreeStore):
@@ -39,7 +38,7 @@ class BookmarkStore(Gtk.TreeStore):
     def __init__(self):
         super().__init__(*self.COLUMNS)
 
-    def get_last_chapter_page(self, it):
+    def get_last_chapter_page(self, it: Gtk.TreeIter) -> int:
         last_page = self[it][self.COLUMN_PAGE]
         it = self.iter_children(it)
         while it is not None:

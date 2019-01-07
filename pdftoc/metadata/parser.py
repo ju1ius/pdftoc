@@ -1,5 +1,6 @@
 import re
 import datetime
+from typing import Optional, Iterable, Tuple
 
 from .model import Document
 from ..utils import local_timezone
@@ -40,17 +41,29 @@ VALID_KEYS = {
 class ParseError(Exception):
     pass
 
+
 class EOF(Exception):
     pass
 
 
+class BookmarkParsingState:
+    def __init__(self):
+        self.previous = None
+        self.stack = []
+
+
 class Parser:
 
-    def parse(self, text, doc):
+    def __init__(self):
+        self.lines: list = []
+        self.curline: int = -1
+        self.num_lines: int = 0
+
+    def parse(self, text: str, doc: Document) -> Document:
         self.lines = text.splitlines()
         self.curline = -1
         self.num_lines = len(self.lines)
-        bookmarks = {'previous': None, 'stack': []}
+        state = BookmarkParsingState()
 
         while True:
             try:
@@ -63,16 +76,15 @@ class Parser:
             elif line == 'InfoBegin':
                 self._parse_info(doc)
             elif line == 'BookmarkBegin':
-                self._parse_bookmark(doc, bookmarks)
+                self._parse_bookmark(doc, state)
             elif line == 'PageMediaBegin':
                 self._parse_page_media(doc)
             else:
                 doc.unknown.append(line)
 
-        self._bookmarks = None
         return doc
 
-    def _parse_info(self, doc):
+    def _parse_info(self, doc: Document):
         key = self._next_value('InfoKey')
         value = self._next_value('InfoValue')
         if key in INFO_KEYS:
@@ -80,8 +92,8 @@ class Parser:
         else:
             doc.infos[key] = value
 
-    def _parse_bookmark(self, doc, state):
-        stack, prev = state['stack'], state['previous']
+    def _parse_bookmark(self, doc: Document, state: BookmarkParsingState):
+        stack, prev = state.stack, state.previous
         parent, title, page, level = None, None, None, None
         while True:
             try:
@@ -89,7 +101,7 @@ class Parser:
             except EOF:
                 break
             except ParseError:
-                self._receide()
+                self._recede()
                 break
             if k == 'BookmarkTitle':
                 title = v
@@ -112,41 +124,39 @@ class Parser:
             # level is 1-indexed
             parent = stack[level - 1 - 1]
         it = doc.bookmarks.append(parent, row=(title, page))
-        state['previous'] = {'iter': it, 'level': level}
+        state.previous = {'iter': it, 'level': level}
 
-
-    def _parse_page_media(self, doc):
+    def _parse_page_media(self, doc: Document):
         media = {}
-        valid_keys = ()
         while True:
             try:
                 k, v = self._next_pair(VALID_KEYS['page_media'])
             except EOF:
                 break
             except ParseError:
-                self._receide()
+                self._recede()
                 break
             k = k.replace('PageMedia', '').lower()
             media[k] = v
         doc.page_medias.append(media)
 
-    def _advance(self, n=1):
+    def _advance(self, n: int = 1):
         self.curline += n
 
-    def _receide(self, n=1):
+    def _recede(self, n: int = 1):
         self.curline -= n
 
-    def _current(self):
+    def _current(self) -> str:
         try:
             return self.lines[self.curline]
         except IndexError:
             raise EOF()
 
-    def _next(self):
+    def _next(self) -> str:
         self._advance()
         return self._current()
 
-    def _next_pair(self, valid_keys=None):
+    def _next_pair(self, valid_keys: Optional[Iterable[str]] = None) -> Tuple[str, str]:
         line = self._next()
         k, v = self._split_pair(line)
         if valid_keys and k not in valid_keys:
@@ -154,18 +164,18 @@ class Parser:
             raise ParseError('Expected <{}> but got <{}>'.format(expected, k))
         return k, v
 
-    def _next_value(self, valid_key):
+    def _next_value(self, valid_key: str) -> str:
         k, v = self._next_pair(valid_keys=(valid_key,))
         return v
 
-    def _split_pair(self, string):
+    def _split_pair(self, string: str) -> Tuple[str, str]:
         try:
             k, v = string.split(':', 1)
             return k.strip(), v.strip()
         except ValueError:
             raise ParseError('Expected key-value pair, got <{}>'.format(string))
 
-    def _parse_info_value(self, value):
+    def _parse_info_value(self, value: str):
         m = PDFTK_DATE_RE.match(value)
         if m:
             tz = local_timezone()
