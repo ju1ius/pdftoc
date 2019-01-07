@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Iterable
 
 
 def local_timezone():
@@ -11,3 +12,12 @@ def local_timezone():
 
 def local_now():
     return datetime.now(local_timezone())
+
+
+def all_equal(items: Iterable) -> bool:
+    it = iter(items)
+    try:
+        first = next(it)
+    except StopIteration:
+        return False
+    return all(x == first for x in it)

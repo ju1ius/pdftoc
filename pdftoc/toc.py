@@ -1,33 +1,34 @@
 import sys
+from typing import Tuple, List
 
 from gi.repository import GObject, Gtk, Gdk, Gio
 
-
-class TOCActions(Gio.SimpleActionGroup):
-
-    def __init__(self):
-        super().__init__()
-        for name in ('delete', 'append-child', 'prepend-child', 'insert-after', 'insert-before'):
-            action = Gio.SimpleAction.new(name, None)
-            self.add_action(action)
-            setattr(self, name.replace('-', '_'), action)
+from .utils import all_equal
 
 
 class TOCController:
 
-    def __init__(self, builder):
+    def __init__(self, app, builder):
         self.container = builder.get_object('toc_container')
         self.scrolled_window = builder.get_object('toc_scrolledwindow')
         self.view = builder.get_object('toc_treeview')
 
-        self.actions = TOCActions()
-        self.actions.delete.connect('activate', lambda *x: self.remove())
-        self.actions.append_child.connect('activate', lambda *x: self.append())
-        self.actions.prepend_child.connect('activate', lambda *x: self.prepend())
-        self.actions.insert_before.connect('activate', lambda *x: self.insert_before())
-        self.actions.insert_after.connect('activate', lambda *x: self.insert_after())
-
-        self.container.insert_action_group('toc', self.actions)
+        actions = [
+            ('delete', lambda *x: self.remove(), '<Alt>d'),
+            ('append-child', lambda *x: self.append(), '<Alt>j'),
+            ('prepend-child', lambda *x: self.prepend(), '<Alt>k'),
+            ('insert-before', lambda *x: self.insert_before(), '<Alt>l'),
+            ('insert-after', lambda *x: self.insert_after(), '<Alt>h'),
+            ('move-up', lambda *x: self.move_up(), '<Alt>KP_8'),
+            ('move-down', lambda *x: self.move_down(), '<Alt>KP_2'),
+            ('move-left', lambda *x: self.move_left(), '<Alt>KP_4'),
+            ('move-right', lambda *x: self.move_right(), '<Alt>KP_6'),
+        ]
+        group = Gio.SimpleActionGroup()
+        group.add_action_entries([(a, b) for a, b, _ in actions])
+        self.container.get_toplevel().insert_action_group('toc', group)
+        for a, _, c in actions:
+            app.set_accels_for_action(f'toc.{a}', [c])
 
         self.actionbar = TOCActionBar(builder.get_object('toc_actionbar'))
         self.context_menu = TOCContextMenu()
@@ -81,7 +82,7 @@ class TOCController:
         model, refs = self._get_selected_refs()
         parent, row = None, ('', 1)
         if refs:
-            parent = model.get_iter(refs[-1].get_path())
+            parent = model.get_iter(refs[0].get_path())
             row = ('', model[parent][model.COLUMN_PAGE])
         it = model.prepend(parent, row)
         self.start_editing(it)
@@ -105,6 +106,58 @@ class TOCController:
         self.view.expand_to_path(path)
         self.view.grab_focus()
         self.view.set_cursor(path, self.view.get_column(col), True)
+
+    def move_up(self):
+        model, refs = self._get_selected_refs()
+        if not refs:
+            return
+        if not all_equal(r.get_path().get_depth() for r in refs):
+            return
+        it = model.get_iter(refs[0].get_path())
+        prev = model.iter_previous(it)
+        if not prev:
+            return
+        for ref in refs:
+            it = model.get_iter(ref.get_path())
+            model.move_before(it, model.iter_previous(it))
+
+    def move_down(self):
+        model, refs = self._get_selected_refs()
+        if not refs:
+            return
+        if not all_equal(r.get_path().get_depth() for r in refs):
+            return
+        it = model.get_iter(refs[-1].get_path())
+        next = model.iter_next(it)
+        if not next:
+            return
+        for ref in reversed(refs):
+            it = model.get_iter(ref.get_path())
+            model.move_after(it, model.iter_next(it))
+
+    def move_left(self):
+        model, refs = self._get_selected_refs()
+        if not refs:
+            return
+        if not all_equal(r.get_path().get_depth() for r in refs):
+            return
+        for ref in refs:
+            row = model[ref.get_path()][:]
+            it = model.get_iter(ref.get_path())
+            parent = model.iter_parent(it)
+            if not parent:
+                continue
+            model.remove(it)
+            model.insert_after(None, parent, row=row)
+
+    def move_right(self):
+        model, refs = self._get_selected_refs()
+        if not refs:
+            return
+        if not all_equal(r.get_path().get_depth() for r in refs):
+            return
+        it = model.get_iter(self._get_deepest_path(refs))
+        next = model.iter_
 
     def _on_page_cell_editing_started(self, renderer, widget, path, data=None):
         widget.set_numeric(True)
@@ -154,10 +207,17 @@ class TOCController:
             None
         )
 
-    def _get_selected_refs(self):
+    def _get_selected_paths(self) -> Tuple[Gtk.TreeStore, List[Gtk.TreePath]]:
+        return self.view.get_selection().get_selected_rows()
+
+    def _get_selected_refs(self) -> Tuple[Gtk.TreeStore, List[Gtk.TreeRowReference]]:
         model, selected_paths = self.view.get_selection().get_selected_rows()
         refs = [Gtk.TreeRowReference(model, path) for path in selected_paths]
         return model, refs
+
+    def _get_deepest_path(self, refs, reverse=False):
+        refs = sorted(refs, key=lambda r: r.get_path().get_depth(), reverse=reverse)
+        return refs[-1]
 
 
 class TOCActionBar(GObject.GObject):
@@ -202,15 +262,23 @@ class TOCContextMenu(Gtk.Menu):
     def __init__(self):
         super().__init__()
 
+        self.move_up_item = Gtk.MenuItem(label='Move Up', action_name='toc.move-up')
+        self.append(self.move_up_item)
+        self.move_down_item = Gtk.MenuItem(label='Move Down', action_name='toc.move-down')
+        self.append(self.move_down_item)
+        self.move_left_item = Gtk.MenuItem(label='Move left', action_name='toc.move-left')
+        self.append(self.move_left_item)
+        self.move_right_item = Gtk.MenuItem(label='Move right', action_name='toc.move-right')
+        self.append(self.move_right_item)
+
+        self.append(Gtk.SeparatorMenuItem())
+
         self.append_item = Gtk.MenuItem(label='Append Child', action_name='toc.append-child')
         self.append(self.append_item)
-
         self.prepend_item = Gtk.MenuItem(label='Prepend Child', action_name='toc.prepend-child')
         self.append(self.prepend_item)
-
         self.insert_before_item = Gtk.MenuItem(label='Insert Before', action_name='toc.insert-before')
         self.append(self.insert_before_item)
-
         self.insert_after_item = Gtk.MenuItem(label='Insert After', action_name='toc.insert-after')
         self.append(self.insert_after_item)
 
@@ -221,9 +289,18 @@ class TOCContextMenu(Gtk.Menu):
         self.append(self.delete_item)
 
     def toggle_items(self, selection_length):
-        self.append_item.set_label('Add Child' if not selection_length else 'Append Child')
+        has_selection = selection_length > 0
+        is_single = selection_length == 1
+
+        self.append_item.set_label('Append Child' if has_selection else 'Add Child')
         self.append_item.set_visible(selection_length < 2)
-        self.prepend_item.set_visible(selection_length == 1)
-        self.insert_before_item.set_visible(selection_length == 1)
-        self.insert_after_item.set_visible(selection_length == 1)
-        self.delete_item.set_visible(selection_length > 0)
+        self.prepend_item.set_visible(is_single)
+        self.insert_before_item.set_visible(is_single)
+        self.insert_after_item.set_visible(is_single)
+
+        self.delete_item.set_visible(has_selection)
+
+        self.move_up_item.set_visible(has_selection)
+        self.move_down_item.set_visible(has_selection)
+        self.move_left_item.set_visible(has_selection)
+        self.move_right_item.set_visible(has_selection)

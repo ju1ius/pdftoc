@@ -19,11 +19,15 @@ BIND_BIDIRECTIONAL = (GObject.BindingFlags.BIDIRECTIONAL
 
 class AppWindowController:
 
-    def __init__(self, builder):
+    def __init__(self, app, builder):
         self._document = None
 
         self.window = builder.get_object('app_window')
         self.window.set_show_menubar(False)
+
+        action = Gio.SimpleAction.new('close', None)
+        action.connect('activate', self._handle_action_close)
+        self.window.add_action(action)
 
         action = Gio.SimpleAction.new('open', None)
         action.connect('activate', self._handle_action_open)
@@ -54,7 +58,7 @@ class AppWindowController:
         self.creation_entry = builder.get_object('meta_creation_date_entry')
         self.creation_entry.connect('day-selected', self._on_creation_date_changed)
 
-        self.toc = TOCController(builder)
+        self.toc = TOCController(app, builder)
 
         # initialize with empty document to avoid errors when no file is loaded
         self.set_document(Document())
@@ -124,6 +128,12 @@ class AppWindowController:
         year, month, day = widget.get_date()
         date = datetime.datetime(year, month, day, tzinfo=LOCAL_TZ)
         self._document.creation_date = date
+
+    def _handle_action_close(self, action, param):
+        """
+        :todo: Show a warning dialog if there are unsaved changes
+        """
+        self.window.close()
 
     def _handle_action_open(self, action, param):
         dialog = Gtk.FileChooserDialog(
