@@ -7,11 +7,17 @@ A simple PDF table-of-contents editor
 Requirements
 ------------
 
+### Production
 * python >= 3.5
-* python GTK
+* GObject, GTK3 and GIO bindings
 * pdftk
 
-## Installation
+### Development
+* pytest
+
+Installation
+------------
+
 ### Debian
 
 ```sh
