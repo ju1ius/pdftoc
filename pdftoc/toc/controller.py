@@ -56,8 +56,9 @@ class TOCController(GObject.GObject):
 
     model = property(get_model, set_model)
 
-    def _on_action_add_row(self):
-        self.model.append(None, ('', 1))
+    def _on_action_add_row(self, *args):
+        it = self.model.append(None, ('', 1))
+        self.start_editing(it)
 
     def _on_action_remove_row(self, action: Gio.Action, param: GLib.Variant, arg):
         model, refs = self._get_selected_refs()
