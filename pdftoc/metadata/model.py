@@ -1,15 +1,18 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from gi.repository import GObject, Gtk
+
+from pdftoc.toc.types import ModelKeyType
+from pdftoc.toc.tree_store import TreeStore
 
 
 class Document(GObject.GObject):
 
-    num_pages = GObject.property(type=int, default=1)
-    title = GObject.property(type=str, default='')
-    subject = GObject.property(type=str, default='')
-    author = GObject.property(type=str, default='')
-    creator = GObject.property(type=str, default='')
+    num_pages: int = GObject.property(type=int, default=1)
+    title: str = GObject.property(type=str, default='')
+    subject: str = GObject.property(type=str, default='')
+    author: str = GObject.property(type=str, default='')
+    creator: str = GObject.property(type=str, default='')
     creation_date = GObject.property(type=object, default=None)
 
     def __init__(self, path: Optional[str] = None):
@@ -21,12 +24,12 @@ class Document(GObject.GObject):
         self.modification_date = None
         self.producer = None
         # Unknown key-value pairs
-        self.infos = {}
+        self.infos: Dict[str, str] = {}
         # Unknown lines
         self.unknown: List[str] = []
 
 
-class BookmarkStore(Gtk.TreeStore):
+class BookmarkStore(TreeStore):
 
     (
         COLUMN_TITLE,
@@ -38,12 +41,11 @@ class BookmarkStore(Gtk.TreeStore):
     def __init__(self):
         super().__init__(*self.COLUMNS)
 
-    def get_last_chapter_page(self, it: Gtk.TreeIter) -> int:
-        last_page = self[it][self.COLUMN_PAGE]
-        it = self.iter_children(it)
-        while it is not None:
-            page = self.get_last_chapter_page(it)
-            if page > last_page:
-                last_page = page
-            it = self.iter_next(it)
-        return last_page
+    def get_title(self, key: ModelKeyType):
+        return self[key][self.COLUMN_TITLE]
+
+    def get_page(self, key: ModelKeyType):
+        return self[key][self.COLUMN_PAGE]
+
+    def get_last_chapter_page(self, key: ModelKeyType) -> int:
+        return max(row[self.COLUMN_PAGE] for row in self.descendants(key))

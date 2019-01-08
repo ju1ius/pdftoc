@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkPopoverMenu" id="main_menu_popover">
@@ -11,6 +11,42 @@
   <object class="GtkApplicationWindow" id="app_window">
     <property name="can_focus">False</property>
     <property name="icon_name">gnome-mime-application-pdf</property>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="main_header">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="title">PDFToc | No document</property>
+        <property name="subtitle">No author</property>
+        <property name="has_subtitle">False</property>
+        <property name="show_close_button">True</property>
+        <property name="decoration_layout">icon:menu,close</property>
+        <child>
+          <object class="GtkMenuButton" id="main_menu_btn">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="popover">main_menu_popover</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">open-menu-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackSwitcher" id="main_stack_switcher">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="stack">main_stack</property>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -256,42 +292,6 @@
         </child>
         <child>
           <placeholder/>
-        </child>
-      </object>
-    </child>
-    <child type="titlebar">
-      <object class="GtkHeaderBar" id="main_header">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="title">Untitled document</property>
-        <property name="subtitle">Unkown author</property>
-        <property name="has_subtitle">False</property>
-        <property name="show_close_button">True</property>
-        <property name="decoration_layout">icon:menu,close</property>
-        <child>
-          <object class="GtkMenuButton" id="main_menu_btn">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="popover">main_menu_popover</property>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="icon_name">open-menu-symbolic</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkStackSwitcher" id="main_stack_switcher">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="stack">main_stack</property>
-          </object>
-          <packing>
-            <property name="position">2</property>
-          </packing>
         </child>
       </object>
     </child>

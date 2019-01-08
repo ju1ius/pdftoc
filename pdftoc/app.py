@@ -1,5 +1,5 @@
-import os.path
-from os.path import abspath, dirname
+from pathlib import Path
+import json
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -9,7 +9,7 @@ from gi.repository import Gio, Gtk
 from .app_window import AppWindowController
 
 
-__dir__ = dirname(abspath(__file__))
+__dir__ = Path(__file__).absolute().parent
 
 
 class Application(Gtk.Application):
@@ -19,6 +19,7 @@ class Application(Gtk.Application):
             application_id='me.ju1ius.pdftoc',
             flags=Gio.ApplicationFlags.HANDLES_OPEN
         )
+        self.resource_path: Path = __dir__ / 'resources'
         # Maps window ids to controller objects
         self.controllers = {}
 
@@ -36,12 +37,7 @@ class Application(Gtk.Application):
         action.connect('activate', self.on_quit)
         self.add_action(action)
 
-        self.set_accels_for_action('app.open', ['<Control><Shift>o'])
-        self.set_accels_for_action('app.quit', ['<Control>q'])
-        self.set_accels_for_action('win.open', ['<Control>o'])
-        self.set_accels_for_action('win.close', ['<Control>w'])
-        self.set_accels_for_action('win.save', ['<Control>s'])
-        self.set_accels_for_action('win.save-as', ['<Control><Shift>s'])
+        self._load_keybindings()
 
     def do_activate(self):
         """
@@ -72,18 +68,21 @@ class Application(Gtk.Application):
         Gtk.Application.do_window_removed(self, window)
 
     def on_quit(self, action, param):
-        print('app.on_quit')
         self.quit()
 
     def on_open(self, action, param):
-        print('app.on_open')
         controller = self._create_controller()
         controller.present()
 
+    def _load_keybindings(self):
+        with open(self.resource_path / 'keybindings.json', encoding='utf8') as fp:
+            config = json.load(fp)
+            for action, accels in config['actions'].items():
+                self.set_accels_for_action(action, accels)
+
     def _create_controller(self):
-        resources = os.path.join(__dir__, 'resources')
-        builder = Gtk.Builder.new_from_file(os.path.join(resources, 'app_window.ui'))
-        builder.add_from_file(os.path.join(resources, 'menus.ui'))
+        builder = Gtk.Builder.new_from_file(str(self.resource_path / 'app_window.ui'))
+        builder.add_from_file(str(self.resource_path / 'menus.ui'))
         controller = AppWindowController(self, builder)
         self.add_window(controller.window)
         self.controllers[controller.get_window_id()] = controller

@@ -6,7 +6,7 @@ from gi.repository import GObject, Gtk, Gio
 from .metadata.model import Document
 from .metadata import loader, writer
 from .utils import local_timezone, local_now
-from .toc import TOCController
+from .toc.controller import TOCController
 
 
 LOCAL_TZ = local_timezone()
@@ -25,21 +25,15 @@ class AppWindowController:
         self.window = builder.get_object('app_window')
         self.window.set_show_menubar(False)
 
-        action = Gio.SimpleAction.new('close', None)
-        action.connect('activate', self._handle_action_close)
-        self.window.add_action(action)
-
-        action = Gio.SimpleAction.new('open', None)
-        action.connect('activate', self._handle_action_open)
-        self.window.add_action(action)
-
-        action = Gio.SimpleAction.new('save', None)
-        action.connect('activate', self._handle_action_save)
-        self.window.add_action(action)
-
-        action = Gio.SimpleAction.new('save-as', None)
-        action.connect('activate', self._handle_action_save_as)
-        self.window.add_action(action)
+        for action, handler in (
+            ('close', self._handle_action_close),
+            ('open', self._handle_action_open),
+            ('save', self._handle_action_save),
+            ('save-as', self._handle_action_save_as),
+        ):
+            action = Gio.SimpleAction.new(action, None)
+            action.connect('activate', handler)
+            self.window.add_action(action)
 
         self.header = builder.get_object('main_header')
 
@@ -104,23 +98,23 @@ class AppWindowController:
         self.set_document(doc)
         msg_ctx = self.message_contexts['io']
         self.statusbar.pop(msg_ctx)
-        self.statusbar.push(msg_ctx, 'Loaded: {}'.format(doc.path))
+        self.statusbar.push(msg_ctx, f'Loaded: {doc.path}')
 
     def _on_document_load_error(self, loader, error):
         msg_ctx = self.message_contexts['io']
         self.statusbar.pop(msg_ctx)
-        self.statusbar.push(msg_ctx, 'Error: {}'.format(error))
+        self.statusbar.push(msg_ctx, f'Error: {error}')
 
     def _on_document_saved(self, writer, doc, newpath):
         doc.path = newpath
         msg_ctx = self.message_contexts['io']
         self.statusbar.pop(msg_ctx)
-        self.statusbar.push(msg_ctx, 'Saved: {}'.format(doc.path))
+        self.statusbar.push(msg_ctx, f'Saved: {doc.path}')
 
     def _on_document_save_error(self, writer, error):
         msg_ctx = self.message_contexts['io']
         self.statusbar.pop(msg_ctx)
-        self.statusbar.push(msg_ctx, 'Error: {}'.format(error))
+        self.statusbar.push(msg_ctx, f'Error: {error}')
 
     def _on_creation_date_changed(self, widget, data=None):
         if not self._document:
@@ -130,9 +124,7 @@ class AppWindowController:
         self._document.creation_date = date
 
     def _handle_action_close(self, action, param):
-        """
-        :todo: Show a warning dialog if there are unsaved changes
-        """
+        # TODO: Show a warning dialog if there are unsaved changes
         self.window.close()
 
     def _handle_action_open(self, action, param):

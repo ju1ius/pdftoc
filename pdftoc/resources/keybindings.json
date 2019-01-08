@@ -1,0 +1,20 @@
+{
+  "actions": {
+    "app.open": ["<Control><Shift>o"],
+    "app.quit": ["<Control>q"],
+    "win.open": ["<Control>o"],
+    "win.close": ["<Control>w"],
+    "win.save": ["<Control>s"],
+    "win.save-as": ["<Control><Shift>s"],
+    "toc.move-row::up": ["<Alt>KP_8"],
+    "toc.move-row::down": ["<Alt>KP_2"],
+    "toc.move-row::left": ["<Alt>KP_4"],
+    "toc.move-row::right": ["<Alt>KP_6"],
+    "toc.add-row": ["<Control>j"],
+    "toc.delete-row": ["Delete"],
+    "toc.create-row::first-child": ["<Control>j"],
+    "toc.create-row::last-child": ["<Control>k"],
+    "toc.create-row::previous-sibling": ["<Control>h"],
+    "toc.create-row::next-sibling": ["<Control>l"]
+  }
+}

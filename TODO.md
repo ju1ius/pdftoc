@@ -1,2 +1,1 @@
-* keyboard shortcuts
-* statusbar
+* Gtk.InfoBar
