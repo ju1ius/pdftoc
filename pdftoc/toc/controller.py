@@ -148,7 +148,6 @@ class TOCController(GObject.GObject):
             return
         model, selected_paths = sel.get_selected_rows()
         rect = self.view.get_cell_area(selected_paths[0])
-        #TODO: coords are wrong when scrolled
         self.context_menu.popup_at_rect(
             self.view.get_bin_window(),
             rect,

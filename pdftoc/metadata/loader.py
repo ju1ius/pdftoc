@@ -20,7 +20,6 @@ class Loader(GObject.GObject):
     __gsignals__ = {
         'success': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
         'error': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'complete': (GObject.SIGNAL_RUN_FIRST, None, ())
     }
 
     def __init__(self):
@@ -32,27 +31,23 @@ class Loader(GObject.GObject):
     def load(self, doc):
         pdftk = which('pdftk')
         if not pdftk:
-            self.emit('error', 'pdftk executable not found')
-            return
+            return self.emit('error', 'pdftk executable not found')
         p = Gio.Subprocess.new(
             argv=[pdftk, doc.path, 'dump_data_utf8'],
-            flags=Gio.SubprocessFlags.STDOUT_PIPE
+            flags=Gio.SubprocessFlags.STDOUT_PIPE|Gio.SubprocessFlags.STDERR_PIPE
         )
         p.communicate_utf8_async(callback=self._on_subprocess_complete, user_data=doc)
 
     def _on_subprocess_complete(self, subprocess, result, doc):
         try:
-            success, stdout, _ = subprocess.communicate_utf8_finish(result)
+            success, stdout, stderr = subprocess.communicate_utf8_finish(result)
+            retcode = subprocess.get_exit_status()
         except GLib.Error as err:
-            self.emit('error', err)
-            self.emit('complete')
-            return
+            return self.emit('error', err)
+        if retcode != 0:
+            return self.emit('error', f'pdftk command failed with exit code {retcode}')
         try:
             Parser().parse(stdout, doc)
+            self.emit('success', doc)
         except Exception as err:
             self.emit('error', err)
-            self.emit('complete')
-            return
-        self.emit('success', doc)
-        self.emit('complete')
-
