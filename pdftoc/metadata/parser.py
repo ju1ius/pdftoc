@@ -64,7 +64,6 @@ class Parser:
         self.curline = -1
         self.num_lines = len(self.lines)
         state = BookmarkParsingState()
-
         while True:
             try:
                 line = self._next()
@@ -123,7 +122,7 @@ class Parser:
         if level > 1:
             # level is 1-indexed
             parent = stack[level - 1 - 1]
-        it = doc.bookmarks.append(parent, row=(title, page))
+        it = doc.outline.append(parent, row=(title, page))
         state.previous = {'iter': it, 'level': level}
 
     def _parse_page_media(self, doc: Document):

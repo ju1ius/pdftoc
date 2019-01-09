@@ -77,7 +77,7 @@ class AppWindowController:
             self.creation_entry.props.year = doc.creation_date.year
             self.creation_entry.props.month = doc.creation_date.month
             self.creation_entry.props.day = doc.creation_date.day
-        self.toc.set_model(doc.bookmarks)
+        self.toc.set_model(doc.outline)
 
     def get_document(self):
         return self._document

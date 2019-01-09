@@ -18,7 +18,7 @@ class Document(GObject.GObject):
     def __init__(self, path: Optional[str] = None):
         super().__init__()
         self.path = path
-        self.bookmarks: BookmarkStore = BookmarkStore()
+        self.outline: OutlineStore = OutlineStore()
         self.page_medias = []
         # Read-only values
         self.modification_date = None
@@ -29,7 +29,7 @@ class Document(GObject.GObject):
         self.unknown: List[str] = []
 
 
-class BookmarkStore(TreeStore):
+class OutlineStore(TreeStore):
 
     (
         COLUMN_TITLE,
@@ -44,8 +44,14 @@ class BookmarkStore(TreeStore):
     def get_title(self, key: ModelKeyType):
         return self[key][self.COLUMN_TITLE]
 
+    def set_title(self, key: ModelKeyType, title: str):
+        self[key][self.COLUMN_TITLE] = title
+
     def get_page(self, key: ModelKeyType):
         return self[key][self.COLUMN_PAGE]
+
+    def set_page(self, key: ModelKeyType, page: str):
+        self[key][self.COLUMN_PAGE] = page
 
     def get_last_chapter_page(self, key: ModelKeyType) -> int:
         return max(row[self.COLUMN_PAGE] for row in self.descendants(key))

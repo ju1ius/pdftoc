@@ -3,9 +3,11 @@ from typing import Tuple, List
 
 from gi.repository import GObject, GLib, Gtk, Gdk, Gio
 
-from pdftoc.metadata.model import BookmarkStore
+from pdftoc.metadata.model import OutlineStore
+from .cell_renderers import ActivatableCellRendererText
 from.action_bar import TOCActionBar
 from.context_menu import TOCContextMenu
+from .edit_form import EditForm
 
 
 class TOCController(GObject.GObject):
@@ -29,24 +31,22 @@ class TOCController(GObject.GObject):
         self.context_menu = TOCContextMenu()
         self.context_menu.attach_to_widget(self.view)
 
-        title_cell = Gtk.CellRendererText()
-        title_cell.set_property('editable', True)
-        title_cell.connect('edited', self._on_title_cell_edited)
+        title_cell = ActivatableCellRendererText()
         column = Gtk.TreeViewColumn('Title', title_cell, text=0)
         column.set_property('expand', True)
         self.view.append_column(column)
 
-        page_cell = Gtk.CellRendererSpin()
-        page_cell.set_property('adjustment', Gtk.Adjustment(lower=0, upper=sys.maxsize, step_increment=1))
-        page_cell.set_property('editable', True)
-        page_cell.connect('editing-started', self._on_page_cell_editing_started)
-        page_cell.connect('edited', self._on_page_cell_edited)
+        page_cell = ActivatableCellRendererText()
         column = Gtk.TreeViewColumn('Page', page_cell, text=1)
         self.view.append_column(column)
 
+        self.view.connect('row-activated', self._on_row_activated)
         self.view.connect('button-release-event', self._on_button_release_event)
         self.view.connect('popup-menu', self._on_popup_menu)
         self.view.get_selection().connect('changed', self._on_selection_changed)
+
+        self.edit_form = EditForm(builder)
+        self.edit_form.connect('submit', self._on_edit_form_submit)
 
     def get_model(self):
         return self.view.get_model()
@@ -91,8 +91,9 @@ class TOCController(GObject.GObject):
     def start_editing(self, treeiter, col=0):
         path = self.model.get_path(treeiter)
         self.view.expand_to_path(path)
+        self.view.set_cursor(path, None, False)
         self.view.grab_focus()
-        self.view.set_cursor(path, self.view.get_column(col), True)
+        self.view.row_activated(path, self.view.get_column(col))
 
     def _on_action_move_row(self, action: Gio.Action, param: GLib.Variant, *args):
         model, refs = self._get_selected_refs()
@@ -105,22 +106,6 @@ class TOCController(GObject.GObject):
             paths.append(model.get_path(it))
         self._set_selected_paths(paths)
 
-    def _on_page_cell_editing_started(self, renderer, widget, path, data=None):
-        widget.set_numeric(True)
-
-    def _on_page_cell_edited(self, widget, path, value):
-        try:
-            value = int(value)
-        except ValueError:
-            return
-        self.model[path][1] = value
-
-    def _on_title_cell_edited(self, widget, path, value):
-        value = value.strip()
-        if not value:
-            return
-        self.model[path][0] = value
-
     def _on_selection_changed(self, selection: Gtk.TreeSelection):
         model, paths = selection.get_selected_rows()
         length = len(paths)
@@ -128,6 +113,20 @@ class TOCController(GObject.GObject):
         self.actions.lookup_action('delete-row').set_enabled(length >= 1)
         self.actions.lookup_action('create-row').set_enabled(length == 1)
         self.actions.lookup_action('move-row').set_enabled(length >= 1)
+
+    def _on_row_activated(self, treeview, path, col):
+        renderer = col.get_cells()[0]
+        coords = renderer.get_activated_cell_coords()
+        coords.y += coords.height
+        model = self.view.get_model()
+        self.edit_form.set_values(model.get_title(path), model.get_page(path))
+        self.edit_form.show(coords)
+
+    def _on_edit_form_submit(self, form, title, page):
+        model, paths = self.view.get_selection().get_selected_rows()
+        if paths:
+            model.set_title(paths[0], title)
+            model.set_page(paths[0], page)
 
     def _on_button_release_event(self, treeview, event):
         if event.button == 3:
@@ -157,21 +156,13 @@ class TOCController(GObject.GObject):
             None
         )
 
-    def _get_selected_paths(self) -> List[Gtk.TreePath]:
-        _, paths = self.view.get_selection().get_selected_rows()
-        return paths
-
     def _set_selected_paths(self, paths):
         sel = self.view.get_selection()
         sel.unselect_all()
         for path in paths:
             sel.select_path(path)
 
-    def _get_selected_refs(self) -> Tuple[BookmarkStore, List[Gtk.TreeRowReference]]:
+    def _get_selected_refs(self) -> Tuple[OutlineStore, List[Gtk.TreeRowReference]]:
         model, selected_paths = self.view.get_selection().get_selected_rows()
         refs = [Gtk.TreeRowReference(model, path) for path in selected_paths]
         return model, refs
-
-    def _get_deepest_path(self, refs, reverse=False):
-        refs = sorted(refs, key=lambda r: r.get_path().get_depth(), reverse=reverse)
-        return refs[-1]
