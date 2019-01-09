@@ -11,6 +11,7 @@
     "toc.move-row::left": ["<Alt>KP_4"],
     "toc.move-row::right": ["<Alt>KP_6"],
     "toc.add-row": ["<Control>j"],
+    "toc.edit-row": ["<Control>e"],
     "toc.delete-row": ["Delete"],
     "toc.create-row::first-child": ["<Control>j"],
     "toc.create-row::last-child": ["<Control>k"],

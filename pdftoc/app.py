@@ -4,7 +4,7 @@ import json
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gio, Gtk
+from gi.repository import Gio, Gtk, Gdk
 
 from .app_window import AppWindowController
 
@@ -22,6 +22,7 @@ class Application(Gtk.Application):
         self.resource_path: Path = __dir__ / 'resources'
         # Maps window ids to controller objects
         self.controllers = {}
+        self.css_provider = Gtk.CssProvider()
 
     def do_startup(self):
         """
@@ -36,6 +37,9 @@ class Application(Gtk.Application):
         action = Gio.SimpleAction.new('quit', None)
         action.connect('activate', self.on_quit)
         self.add_action(action)
+
+        self.css_provider.load_from_path(str(self.resource_path / 'app.css'))
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         self._load_keybindings()
 
@@ -84,6 +88,7 @@ class Application(Gtk.Application):
         builder = Gtk.Builder.new_from_file(str(self.resource_path / 'app_window.ui'))
         builder.add_from_file(str(self.resource_path / 'menus.ui'))
         controller = AppWindowController(self, builder)
+        controller.window.get_style_context()
         self.add_window(controller.window)
         self.controllers[controller.get_window_id()] = controller
 

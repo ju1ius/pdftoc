@@ -1,0 +1,8 @@
+
+#toc_prepend_btn image {
+    -gtk-icon-transform: rotate(45deg);
+}
+
+#toc_append_btn image {
+    -gtk-icon-transform: rotate(-45deg);
+}

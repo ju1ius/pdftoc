@@ -5,7 +5,7 @@ from gi.repository import GObject, GLib, Gtk, Gdk, Gio
 
 from pdftoc.metadata.model import OutlineStore
 from .cell_renderers import ActivatableCellRendererText
-from.action_bar import TOCActionBar
+from.sidebar import TOCSidebar
 from.context_menu import TOCContextMenu
 from .edit_form import EditForm
 
@@ -21,15 +21,14 @@ class TOCController(GObject.GObject):
         self.actions = Gio.SimpleActionGroup()
         self.actions.add_action_entries([
             ('add-row', self._on_action_add_row),
+            ('edit-row', self._on_action_edit_row),
             ('create-row', self._on_action_create_row, 's'),
             ('move-row', self._on_action_move_row, 's'),
             ('delete-row', self._on_action_remove_row),
         ])
         self.container.get_toplevel().insert_action_group('toc', self.actions)
 
-        self.actionbar = TOCActionBar(builder.get_object('toc_actionbar'))
-        self.context_menu = TOCContextMenu()
-        self.context_menu.attach_to_widget(self.view)
+        self.sidebar = TOCSidebar(builder, self.actions)
 
         title_cell = ActivatableCellRendererText()
         column = Gtk.TreeViewColumn('Title', title_cell, text=0)
@@ -48,6 +47,9 @@ class TOCController(GObject.GObject):
         self.edit_form = EditForm(builder)
         self.edit_form.connect('submit', self._on_edit_form_submit)
 
+        self.context_menu = TOCContextMenu()
+        self.context_menu.attach_to_widget(self.view)
+
     def get_model(self):
         return self.view.get_model()
 
@@ -59,6 +61,11 @@ class TOCController(GObject.GObject):
     def _on_action_add_row(self, *args):
         it = self.model.append(None, ('', 1))
         self.start_editing(it)
+
+    def _on_action_edit_row(self, *args):
+        model, paths = self._get_selected_rows()
+        if paths:
+            self.start_editing(model.get_iter(paths[0]))
 
     def _on_action_remove_row(self, action: Gio.Action, param: GLib.Variant, arg):
         model, refs = self._get_selected_refs()
@@ -110,8 +117,9 @@ class TOCController(GObject.GObject):
         model, paths = selection.get_selected_rows()
         length = len(paths)
         self.actions.lookup_action('add-row').set_enabled(length == 0)
-        self.actions.lookup_action('delete-row').set_enabled(length >= 1)
+        self.actions.lookup_action('edit-row').set_enabled(length == 1)
         self.actions.lookup_action('create-row').set_enabled(length == 1)
+        self.actions.lookup_action('delete-row').set_enabled(length >= 1)
         self.actions.lookup_action('move-row').set_enabled(length >= 1)
 
     def _on_row_activated(self, treeview, path, col):
@@ -123,7 +131,7 @@ class TOCController(GObject.GObject):
         self.edit_form.show(coords)
 
     def _on_edit_form_submit(self, form, title, page):
-        model, paths = self.view.get_selection().get_selected_rows()
+        model, paths = self._get_selected_rows()
         if paths:
             model.set_title(paths[0], title)
             model.set_page(paths[0], page)
@@ -160,6 +168,9 @@ class TOCController(GObject.GObject):
         sel.unselect_all()
         for path in paths:
             sel.select_path(path)
+
+    def _get_selected_rows(self):
+        return self.view.get_selection().get_selected_rows()
 
     def _get_selected_refs(self) -> Tuple[OutlineStore, List[Gtk.TreeRowReference]]:
         model, selected_paths = self.view.get_selection().get_selected_rows()
